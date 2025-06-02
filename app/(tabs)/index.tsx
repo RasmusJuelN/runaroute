@@ -1,75 +1,59 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState } from 'react';
+import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import AddressInput from '@/components/AddressInput';
+import MapWithLocation from '@/components/MapWithLocation';
+import SeekBar from '@/components/SeekBar';
 
 export default function HomeScreen() {
+  const [address, setAddress] = useState('');
+  const [coords, setCoords] = useState<{ lat: string; lon: string } | null>(null);
+  const [distance, setDistance] = useState(5);
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={styles.topPanel}>
+    <AddressInput
+      style={styles.addressInput}
+      value={address}
+      onChangeText={setAddress}
+      onSelectSuggestion={sugg => setCoords({ lat: sugg.lat, lon: sugg.lon })}
+    />
+    <SeekBar value={distance} onValueChange={setDistance} style={styles.seekbar}/>
+  </View>
+        <View style={styles.mapContainer}>
+    <MapWithLocation coords={coords} />
+  </View>
+  </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    marginTop: 50,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  topPanel: {
+    position: 'relative',
+
+    padding: 16,
+    margin: 10,
+    zIndex: 10,
+    borderRadius: 20,
+    backgroundColor: '#3e3e3e'
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  addressInput: {
+    position: 'relative',
+  },
+  seekbar: {
+    position: 'relative',
+  },
+
+  mapContainer: {
+    flex: 1,
+    zIndex: 1,
     position: 'absolute',
+    height: '100%',
+    width: '100%',
   },
 });
