@@ -9,35 +9,40 @@ type RouteType = {
   coordinates: { latitude: number; longitude: number }[];
   distance: number; // in km
 };
-function generateRoutes(
-  start: { lat: string; lon: string },
-  distance: number,
-  count: number = 3
-): RouteType[] {
-  // Generates 'count' circular routes around the start point
-  const R = 6371; // Earth radius in km
-  const centerLat = parseFloat(start.lat);
-  const centerLon = parseFloat(start.lon);
 
-  return Array.from({ length: count }).map((_, idx) => {
-    const points = 12;
-    const angleOffset = (Math.PI * 2 * idx) / count;
-    const radius = distance / (2 * Math.PI); // km, so circumference = distance
+async function fetchORSRoute(start: { lat: string; lon: string }, distanceKm: number, seed: number = 1) {
+  const apiKey = '5b3ce3597851110001cf6248e5a552452d70455a998168bb819ed0f8';
+  const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson';
+  const body = {
+    coordinates: [[parseFloat(start.lon), parseFloat(start.lat)]],
+    options: {
+      round_trip: {
+        length: distanceKm * 1000, // meters
+        points: 4,
+        seed, // <--- use the seed
+      },
+    },
+  };
 
-    const coordinates = Array.from({ length: points }).map((__, i) => {
-      const angle = (2 * Math.PI * i) / points + angleOffset;
-      const dLat = (radius / R) * Math.cos(angle);
-      const dLon = (radius / R) * Math.sin(angle) / Math.cos(centerLat * Math.PI / 180);
-      return {
-        latitude: centerLat + dLat * (180 / Math.PI),
-        longitude: centerLon + dLon * (180 / Math.PI),
-      };
-    });
-    // Close the loop
-    coordinates.push(coordinates[0]);
-    return { coordinates, distance };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
   });
+
+  if (!res.ok) throw new Error('Failed to fetch route');
+  const data = await res.json();
+  const coordinates = data.features[0].geometry.coordinates.map(([lon, lat]: [number, number]) => ({
+    latitude: lat,
+    longitude: lon,
+  }));
+  const distance = data.features[0].properties.summary.distance / 1000;
+  return { coordinates, distance };
 }
+
 export default function HomeScreen() {
   const [address, setAddress] = useState('');
   const [coords, setCoords] = useState<{ lat: string; lon: string } | null>(null);
@@ -48,12 +53,19 @@ export default function HomeScreen() {
   const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
 
   // Find Route handler
-  const handleFindRoute = () => {
-    if (!coords) return;
-    const generated = generateRoutes(coords, distance, 3);
-    setRoutes(generated);
+  const handleFindRoute = async () => {
+  if (!coords) return;
+  try {
+    // Fetch 3 routes with different seeds
+    const promises = [1, 2].map(seed => fetchORSRoute(coords, distance, seed));
+    const routes = await Promise.all(promises);
+    setRoutes(routes);
     setCurrentRouteIndex(0);
-  };
+  } catch (e) {
+    alert('Could not generate routes. Please try again.');
+    setRoutes([]);
+  }
+};
 
   // Navigation handlers
   const handlePrevRoute = () => setCurrentRouteIndex(i => Math.max(i - 1, 0));
@@ -91,7 +103,7 @@ export default function HomeScreen() {
       <View style={styles.bottomPanel}>
         {coords && routes.length === 0 && (
   <TouchableOpacity style={styles.customButton} onPress={handleFindRoute}>
-    <Text style={styles.customButtonText}>Generate routes</Text>
+    <Text style={styles.customButtonText}>Find routes</Text>
   </TouchableOpacity>
 )}
         {routes.length > 0 && (
@@ -114,7 +126,7 @@ export default function HomeScreen() {
       <MaterialIcons name="refresh" size={24} color="#fff" />
     </TouchableOpacity>
     <Text style={styles.routeDistance}>
-      {routes[currentRouteIndex].distance} km
+      {routes[currentRouteIndex].distance.toFixed(1)} km
     </Text>
 <TouchableOpacity
       style={[
