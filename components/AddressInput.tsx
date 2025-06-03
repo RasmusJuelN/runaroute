@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
   suggestion: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#f2d3cd',
+    
   },
 });

@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 20,
+    fontWeight: 'bold',
     paddingLeft:14,
     paddingBottom: 10,
     color: '#f0735a',
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
   slider: {
     width: '100%',
     height: 20,
+    marginBottom: 8,
     zIndex: 5,
   },
 });
