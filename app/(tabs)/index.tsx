@@ -117,13 +117,13 @@ export default function HomeScreen() {
       style={[styles.customButton, styles.customButtonCancel]}
       onPress={() => setRoutes([])}
     >
-      <MaterialIcons name="close" size={24} color="#fff" />
+      <MaterialIcons name="close" size={20} color="#fff" />
     </TouchableOpacity>
     <TouchableOpacity
       style={styles.customButton}
       onPress={handleFindRoute}
     >
-      <MaterialIcons name="refresh" size={24} color="#fff" />
+      <MaterialIcons name="refresh" size={20} color="#fff" />
     </TouchableOpacity>
     <Text style={styles.routeDistance}>
       {routes[currentRouteIndex].distance.toFixed(1)} km
@@ -136,7 +136,7 @@ export default function HomeScreen() {
       onPress={handlePrevRoute}
       disabled={currentRouteIndex === 0}
     >
-      <MaterialIcons name="chevron-left" size={24} color="#fff" />
+      <MaterialIcons name="chevron-left" size={20} color="#fff" />
     </TouchableOpacity>
 <TouchableOpacity
       style={styles.customButton}
@@ -152,7 +152,7 @@ export default function HomeScreen() {
       onPress={handleNextRoute}
       disabled={currentRouteIndex === routes.length - 1}
     >
-      <MaterialIcons name="chevron-right" size={24} color="#fff" />
+      <MaterialIcons name="chevron-right" size={20} color="#fff" />
     </TouchableOpacity>
     
   </View>
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     left: 5,
     right: 5,
    
-    padding: 20,
+    padding: 16,
     backgroundColor: '#3e3e3e',
     borderRadius: 20,
   
@@ -246,7 +246,7 @@ customButtonCancel: {
 customButtonText: {
   color: '#fff',
   fontWeight: 'bold',
-  fontSize: 24,
+  fontSize: 20,
   textAlign: 'center',
 },
 });

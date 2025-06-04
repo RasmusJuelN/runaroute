@@ -103,18 +103,13 @@ const styles = StyleSheet.create({
     borderRadius:10,
     borderColor: '#f0735a',
     borderWidth: 2
-    
- 
   },
   input: {
-
     borderColor: '#ccc',
     borderRadius: 10,
     padding: 10,
     fontSize: 20,
     backgroundColor: '#f9f9f9',
-    
-    
   },
   dropdown: {
     position: 'absolute',
