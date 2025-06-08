@@ -1,7 +1,10 @@
 import CompletedRouteItem from '@/components/CompletedRouteItem';
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
-
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import {supabase} from '@/env/supabase'; 
+import type { User } from '@supabase/supabase-js';
+import { useRouter } from 'expo-router';
 const mockRoutes = [
   {
     id: '1',
@@ -63,18 +66,47 @@ const mockRoutes = [
 ];
 
 export default function ProfileScreen() {
-  const username = 'Username';
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Log out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log out', style: 'destructive', onPress: async () => {
+            await supabase.auth.signOut();
+            setUser(null);
+            // Optionally, clear any local state here if needed
+          }
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Profile Picture */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <MaterialIcons name="logout" size={18} color="#f0735a" />
+        <Text style={styles.logoutText}>Log out</Text>
+        
+      </TouchableOpacity>
       <View style={styles.profilePicWrapper}>
         <Image          
           style={styles.profilePic}
+          source={require('@/assets/images/profile-placeholder2.jpg')}
         />
       </View>
       {/* Username */}
-      <Text style={styles.username}>{username}</Text>
+      <Text style={styles.username}>{user ? user.email : 'you are...'}</Text>
       {/* Separator */}
       <View style={styles.separator} />
       {/* Previous Routes */}
@@ -99,9 +131,9 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
       style={styles.statisticsButton}
-
-    >
-      <Text style={styles.customButtonText}>Statistics</Text>
+      onPress={() => router.push('/statistics')}
+      >
+      <MaterialCommunityIcons size={28} name="podium-gold" color="#ffffff" />
     </TouchableOpacity>
 
 </View>
@@ -113,14 +145,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
-    marginTop: 50,
     alignItems: 'center',
+  },
+  logoutButton: {
+    fontSize: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 10,
+    elevation: 5,
+    zIndex: 1,
+  },
+  logoutText: {
+    fontSize: 16,
+    
+    color: '#f0735a',
+    marginRight: 6,
+    marginLeft: 6,
   },
   profilePicWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+    marginTop: 60,
   },
   profilePic: {
     width: 110,
@@ -145,19 +196,20 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     alignSelf: 'flex-start',
-    marginHorizontal: 20,
+    marginHorizontal: 26,
     marginBottom: 10,
     color: '#f0735a',
   },
   listContainer: {
      width: '100%', 
-     paddingHorizontal: 20, 
+     paddingHorizontal: 10, 
   },
   statisticsButton: {
     width: '80%',
     height: 50,
     backgroundColor: '#f0735a',
     borderRadius: 10,
+    padding:10,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,

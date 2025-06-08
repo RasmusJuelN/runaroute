@@ -8,7 +8,7 @@ type Props = {
   coords: { lat: string; lon: string } | null;
   route?: RouteType | null; // Optional route prop
   onSetCoords: (coords: { lat: string; lon: string }) => void;
-  
+  onMapLoaded?: () => void; // Optional callback when map is loaded
 };
 
 type RouteType = {
@@ -16,11 +16,14 @@ type RouteType = {
   distance: number;
 };
 
-export default function MapWithLocation({ coords , route, onSetCoords}: Props) {
+
+export default function MapWithLocation({ coords, route, onSetCoords, onMapLoaded }: Props) {
   const [region, setRegion] = useState<Region | null>(null);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showMarker, setShowMarker] = useState(true);
   const mapRef = useRef<MapView>(null);
+
+  
 
   useEffect(() => {
     if (userLocation && !coords) {
@@ -107,6 +110,7 @@ export default function MapWithLocation({ coords , route, onSetCoords}: Props) {
         region={region}
         showsUserLocation={true}
         showsMyLocationButton={false}
+        onMapReady={onMapLoaded}
         onRegionChangeComplete={newRegion => {
           if (
             userLocation &&
@@ -149,7 +153,7 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 100,
     right: 12,
     backgroundColor: '#fff',
     borderRadius: 25,

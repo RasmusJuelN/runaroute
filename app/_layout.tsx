@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import CustomHeaderBar from '@/components/CustomHeaderBar';
+import { View } from 'react-native';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,10 +21,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+       <View style={{ flex: 1 }}>
+            <CustomHeaderBar />
+            <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+      </View>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
