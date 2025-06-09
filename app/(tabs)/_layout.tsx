@@ -2,13 +2,15 @@ import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 
-import { supabase } from '@/env/supabase'; // adjust path if needed
+import { supabase } from '@/.env/supabase'; // adjust path if needed
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import RegisterScreen from '@/components/register';
+import LoginScreen from '@/components/login';
 
 
 export default function TabLayout() {
@@ -57,9 +59,10 @@ return (
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarBackground: TabBarBackground,
+
           tabBarStyle: Platform.select({
             ios: { position: 'absolute' },
-            default: {},
+            default: {marginTop: 4},
           }),
         }}
       >
@@ -68,6 +71,7 @@ return (
         options={{
           title: 'Weather',
           tabBarIcon: () => <MaterialCommunityIcons size={28} name="weather-partly-cloudy" color="#f0735a" />,
+          
         }}
       />
       <Tabs.Screen

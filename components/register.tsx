@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { supabase } from '../env/supabase';
+import { supabase } from '../.env/supabase';
 import Logo from './logo';
+import BackgroundCircles from './BackgroundCircles';
 
 export default function RegisterScreen({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const [email, setEmail] = useState('');
@@ -21,6 +22,7 @@ export default function RegisterScreen({ onSwitchToLogin }: { onSwitchToLogin: (
 
     return (
     <View style={styles.container}>
+      <BackgroundCircles/>
       <View style={ styles.logoContainer}>
               <Logo></Logo>
             </View>

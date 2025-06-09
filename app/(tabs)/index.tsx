@@ -103,7 +103,7 @@ export default function HomeScreen() {
     if (!coords) return;
     try {
       // Fetch 3 routes with different seeds
-      const promises = [1, 2].map(seed => fetchORSRoute(coords, distance, seed));
+      const promises = [1, 2, 3].map(seed => fetchORSRoute(coords, distance, seed));
       const routes = await Promise.all(promises);
       setRoutes(routes);
       setCurrentRouteIndex(0);
@@ -286,7 +286,7 @@ export default function HomeScreen() {
         {tracking && (
           <View style={styles.statsBar}>
             <View style={styles.statsItem}>
-              <Text style={styles.statsLabel}>Distance</Text>
+              <Text style={styles.statsLabel}>Distance ({routes[currentRouteIndex].distance.toFixed(1)})</Text>
               <Text style={styles.statsValue}>{distanceCovered.toFixed(2)} km</Text>
             </View>
             <View style={styles.statsItem}>
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#3e3e3eE6',
-    borderRadius: 16,
+    borderRadius: 10,
     marginHorizontal: 8,
     paddingVertical: 12,
   },
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     right: 8,
     padding: 16,
     zIndex: 10,
-    borderRadius: 20,
+    borderRadius: 10,
     backgroundColor: '#3e3e3eE6'
   },
   addressInput: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     right: 8,
     padding: 16,
     backgroundColor: '#3e3e3eE6',
-    borderRadius: 20,
+    borderRadius: 10,
     zIndex: 10,
     flexDirection: 'column',
     alignItems: 'center',
