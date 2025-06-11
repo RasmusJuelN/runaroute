@@ -120,12 +120,13 @@ function getAveragePaceSeconds(routes: Route[]) {
 
 const styles = StyleSheet.create({
   container: {
+
     flexGrow: 1,
     flex: 1,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+
   },
    backButton: {
     position: 'absolute',

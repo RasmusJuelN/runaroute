@@ -7,10 +7,18 @@ import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import { mockRoutes } from '@/data/routes';
 import BackgroundCircles from '@/components/BackgroundCircles';
+import CustomAlert from '@/components/CustomAlert';
+import { setLogLevel } from 'firebase/app';
+
 
 export default function ProfileScreen() {
   const [user, setUser] = useState<User | null>(null);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const router = useRouter();
+
+const handleLogout = () => {
+  setShowLogoutAlert(true);
+};
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -18,26 +26,26 @@ export default function ProfileScreen() {
     });
   }, []);
 
-  const handleLogout = async () => {
-    Alert.alert(
-      'Log out',
-      'Are you sure you want to log out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log out', style: 'destructive', onPress: async () => {
-            await supabase.auth.signOut();
-            setUser(null);
-            // Optionally, clear any local state here if needed
-          }
-        },
-      ],
-      { cancelable: true }
-    );
-  };
+ 
 
   return (
     <View style={styles.container}>
       <BackgroundCircles/>
+      <CustomAlert
+    visible={showLogoutAlert}
+    title="Log out?"
+    message="Are you sure you want to log out?"
+    onCancel={() => setShowLogoutAlert(false)}
+    onConfirm={async () => {
+      setShowLogoutAlert(false);
+      setShowLogoutAlert(true);
+      await supabase.auth.signOut();
+            setUser(null);
+    }}
+    
+    cancelText="No"
+    confirmText="Yes"
+  />
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <MaterialIcons name="logout" size={18} color="#f0735a" />
         <Text style={styles.logoutText}>Log out</Text>
@@ -54,7 +62,7 @@ export default function ProfileScreen() {
       {/* Separator */}
       <View style={styles.separator} />
       {/* Previous Routes */}
-      <Text style={styles.sectionTitle}>Most recent</Text>
+      <Text style={styles.sectionTitle}>Completed routes</Text>
       <FlatList
       style={styles.listContainer}
       data={mockRoutes}

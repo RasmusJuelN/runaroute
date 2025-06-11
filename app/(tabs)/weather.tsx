@@ -1,8 +1,9 @@
-import { WEATHERAPI_KEY } from '@/.env/weather';
+import { WEATHERAPI_KEY as apiKey } from '@/.env/weather';
 import BackgroundCircles from '@/components/BackgroundCircles';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import * as Location from 'expo-location';
 
 const CITY = 'Copenhagen';
 
@@ -13,19 +14,28 @@ export default function WeatherScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(
-      `https://api.weatherapi.com/v1/forecast.json?key=${WEATHERAPI_KEY}&q=${CITY}&days=5&aqi=no&alerts=no`
-    )
-      .then(res => res.json())
-      .then(data => {
-        setForecast(data.forecast?.forecastday || []);
-        setCurrent(data.current);
-        setLocation(data.location);
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
         setLoading(false);
-        console.log('Weather data:', current)
+        alert('Permission to access location was denied');
+        return;
+      }
+      let loc = await Location.getCurrentPositionAsync({});
+      const lat = loc.coords.latitude;
+      const lon = loc.coords.longitude;
 
-      });
-
+      fetch(
+        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${lat},${lon}&days=7&aqi=no&alerts=no`
+      )
+        .then(res => res.json())
+        .then(data => {
+          setForecast(data.forecast?.forecastday || []);
+          setCurrent(data.current);
+          setLocation(data.location);
+          setLoading(false);
+        });
+    })();
   }, []);
 
   if (loading) {
@@ -53,22 +63,21 @@ export default function WeatherScreen() {
   return (
     <View style={styles.container}>
       <BackgroundCircles />
-      {/* Top: City and Country */}
       <Text style={styles.city}>
         {location?.name}, <Text style={styles.country}>{location?.country}</Text>
       </Text>
 
       {/* Center: Weather Icon, Temp, Description */}
       <View style={styles.centerBox}>
-        <Image
+        {/* <Image
           source={{ uri: `https:${current.condition.icon}` }}
           style={styles.weatherIcon}
-        />
-        {/* <MaterialCommunityIcons style={styles.weatherIcon}
+        /> */}
+        <MaterialCommunityIcons style={styles.weatherIcon}
   name={getWeatherIcon(current.condition.text.toLowerCase())}
   size={260}
-  color="#333"
-/> */}
+  color="#f0735a"
+/>
         {/* <Image
           source={{ uri: `https:${current.condition.icon}` }}
           style={styles.weatherIcon}
@@ -80,20 +89,20 @@ export default function WeatherScreen() {
       {/* Weather details row */}
       <View style={styles.detailsRow}>
          <View style={styles.detailItem}>
-    <MaterialCommunityIcons name="weather-windy" size={32} color="#f0735a" />
+    <MaterialCommunityIcons name="weather-windy" size={32} color="#7b7b7b" />
     <Text style={styles.detailValue}>{current.wind_kph} km/h</Text>
   </View>
   <View style={styles.detailItem}>
-    <MaterialCommunityIcons name="water-percent" size={32} color="#f0735a" />
+    <MaterialCommunityIcons name="water-percent" size={32} color="#7b7b7b" />
     <Text style={styles.detailValue}>{current.humidity}%</Text>
   </View>
   <View style={styles.detailItem}>
-    <MaterialCommunityIcons name="weather-sunset-up" size={32} color="#f0735a" />
+    <MaterialCommunityIcons name="weather-sunset-up" size={32} color="#7b7b7b" />
     <Text style={styles.detailValue}>{today.astro.sunrise}</Text>
   </View>
       </View>
 
-      {/* Bottom: 5-day forecast */}
+     
       <FlatList
         data={forecast}
         horizontal
@@ -101,19 +110,23 @@ export default function WeatherScreen() {
         keyExtractor={item => item.date}
         style={styles.forecastList}
         contentContainerStyle={{ gap: 12, paddingHorizontal: 8 }}
-        renderItem={({ item }) => (
-          <View style={styles.dayBox}>
-            <Image
-              source={{ uri: `https:${item.day.condition.icon}` }}
-              style={styles.dayIcon}
-            />
-            <Text style={styles.dayLabel}>
-              {new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' })}
-            </Text>
-            <Text style={styles.dayTemp}>{Math.round(item.day.avgtemp_c)}°</Text>
-          </View>
-        )}
+        renderItem={({ item, index }) => (
+    <View style={styles.dayBox}>
+      <MaterialCommunityIcons
+        style={styles.dayIcon}
+        name={getWeatherIcon(item.day.condition.text.toLowerCase())}
+        size={32}
+        color="#f0735a"
       />
+      <Text style={styles.dayLabel}>
+        {index === 0
+          ? 'Today'
+          : new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' })}
+      </Text>
+      <Text style={styles.dayTemp}>{Math.round(item.day.avgtemp_c)}°</Text>
+    </View>
+  )}
+/>
     </View>
   );
 }
@@ -147,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 70,
   },
-  dayIcon: { width: 48, height: 36, marginBottom: 4 },
+  dayIcon: {  marginBottom: 4 },
   dayLabel: { color: '#fff', fontSize: 18, marginBottom: 2 },
   dayTemp: { color: '#fff', fontWeight: 'bold', fontSize: 32 },
 });

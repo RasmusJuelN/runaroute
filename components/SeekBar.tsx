@@ -10,7 +10,7 @@ type Props = {
   style?: object;
 };
 
-export default function SeekBar({ value, onValueChange, min = 1, max = 50 }: Props) {
+export default function SeekBar({ value, onValueChange, min = 1, max = 30 }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Distance: {value} km</Text>

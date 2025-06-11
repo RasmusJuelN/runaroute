@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+// Type for a suggestion returned from the Nominatim (openstreetmap) API
 type Suggestion = {
-    place_id: number;
+  place_id: number;
   display_name: string;
   lat: string;
   lon: string;
 };
 
+// Props for the AddressInput component
 type Props = {
   value: string;
   onChangeText: (text: string) => void;
@@ -17,65 +19,69 @@ type Props = {
 };
 
 export default function AddressInput({ value, onChangeText, placeholder, onSelectSuggestion }: Props) {
+  // State for fetched suggestions
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  // State to control dropdown visibility
   const [showDropdown, setShowDropdown] = useState(false);
-  const inputRef = useRef<TextInput>(null); // 1. Create ref
+  // Ref to control focus/blur of the input
+  const inputRef = useRef<TextInput>(null);
 
+  // Effect: Fetch address suggestions when input value changes
   useEffect(() => {
-  
     const trimmedValue = value.trim();
-  console.log('Input value:', value, 'Trimmed:', trimmedValue, 'Length:', trimmedValue.length);
-  if (trimmedValue.length < 3) {
-    setSuggestions([]);
-    setShowDropdown(false);
-    return;
-  }
-    const timeout = setTimeout(() => {
-  console.log('Fetching...');
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedValue)}`, {
-    headers: {
-      'User-Agent': 'runaroute-app/1.0 (runaroute@email.com)', // Use your app name/email
-      'Accept-Language': 'en', // Optional: set language
-    },
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log('Nominatim suggestions:', data);
-      setSuggestions(data);
-      setShowDropdown(true);
-    })
-    .catch(err => {
-      console.error('Error fetching suggestions:', err);
+    // If input is too short, clear suggestions and hide dropdown
+    if (trimmedValue.length < 3) {
       setSuggestions([]);
       setShowDropdown(false);
-    });
-}, 600);
+      return;
+    }
+    // Debounce API call by 600ms
+    const timeout = setTimeout(() => {
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedValue)}`, {
+        headers: {
+          'User-Agent': 'runaroute-app/1.0 (runaroute@email.com)', // Required by Nominatim
+          'Accept-Language': 'en', // Optional: set language
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          setSuggestions(data);
+          setShowDropdown(true);
+        })
+        .catch(err => {
+          setSuggestions([]);
+          setShowDropdown(false);
+        });
+    }, 600);
+    // Cleanup: clear timeout if value changes before debounce finishes
     return () => clearTimeout(timeout);
-    
   }, [value]);
 
+  // Handler: When a suggestion is selected
   const handleSelect = (suggestion: Suggestion) => {
-    onChangeText(''); // Clear the input field
-    setShowDropdown(false);
+    onChangeText(''); 
+    setShowDropdown(false); 
     setSuggestions([]);
-    inputRef.current?.blur(); // 2. Unfocus the input
-    onSelectSuggestion && onSelectSuggestion(suggestion);
+    inputRef.current?.blur(); // Unfocus input
+    // If onSelectSuggestion exists, Pass selected suggestion up (callback)
+    onSelectSuggestion && onSelectSuggestion(suggestion); 
   };
 
   return (
     <View style={styles.container}>
+      {/* Address input field */}
       <TextInput
-      ref={inputRef} // 3. Attach ref
+        ref={inputRef}
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder || "Enter address (optional)"}
         autoCorrect={false}
         autoCapitalize="none"
-         selectTextOnFocus={true}
+        selectTextOnFocus={true}
       />
+      {/* Dropdown with suggestions */}
       {showDropdown && suggestions.length > 0 && (
-        console.log('Rendering suggestions:', suggestions),
         <View style={styles.dropdown}>
           <FlatList
             data={suggestions}
@@ -93,14 +99,15 @@ export default function AddressInput({ value, onChangeText, placeholder, onSelec
   );
 }
 
+// Styles for the component
 const styles = StyleSheet.create({
- container: {
+  container: {
     padding: 2,
     backgroundColor: '#fff',
-    marginLeft:10,
-    marginRight:10,
-    marginTop:10,
-    borderRadius:10,
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 10,
+    borderRadius: 10,
     borderColor: '#f0735a',
     borderWidth: 2
   },
@@ -123,12 +130,10 @@ const styles = StyleSheet.create({
     maxHeight: 250,
     zIndex: 100,
     elevation: 3,
-    
   },
   suggestion: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f2d3cd',
-    
   },
 });

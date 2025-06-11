@@ -13,7 +13,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:31',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
   {
     id: '3',
@@ -21,7 +21,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:31',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
   {
     id: '4',
@@ -29,7 +29,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:31',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
   {
     id: '5',
@@ -37,7 +37,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:31',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
   {
     id: '6',
@@ -45,7 +45,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:31',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
   {
     id: '7',
@@ -53,7 +53,7 @@ export const mockRoutes = [
     distance: 10.0,
     time: '00:55:10',
     avgPace: '5:38',
-    image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
   },
 
 ];

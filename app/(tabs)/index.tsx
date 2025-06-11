@@ -1,20 +1,22 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Button, Keyboard, StyleSheet, TouchableWithoutFeedback, View, Text, TouchableOpacity, Platform } from 'react-native';
 import AddressInput from '@/components/AddressInput';
+import {OPENROUTEAPI_KEY as apiKey} from '@/.env/openroutes';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Keyboard, Platform, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 // Remove static import of MapWithLocation for web compatibility
+import CustomAlert from '@/components/CustomAlert';
 import SeekBar from '@/components/SeekBar';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Animated,Alert, ActivityIndicator} from 'react-native';
 import * as Location from 'expo-location';
 
+// Type for a route (used for displaying and tracking)
 type RouteType = {
   coordinates: { latitude: number; longitude: number }[];
   distance: number; // in km
 };
 
+// Fetches a round-trip walking route from OpenRouteService API
 async function fetchORSRoute(start: { lat: string; lon: string }, distanceKm: number, seed: number = 1) {
-  const apiKey = '5b3ce3597851110001cf6248e5a552452d70455a998168bb819ed0f8';
   const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson';
   const body = {
     coordinates: [[parseFloat(start.lon), parseFloat(start.lat)]],
@@ -63,24 +65,37 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 export default function HomeScreen() {
+  // State for address input and selected coordinates
   const [address, setAddress] = useState('');
   const [coords, setCoords] = useState<{ lat: string; lon: string } | null>(null);
+
+    // State for route generation and selection
   const [distance, setDistance] = useState(5);
   const [routes, setRoutes] = useState<RouteType[]>([]);
   const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
+
+   // State for tracking and UI
   const [routeStarted, setRouteStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-
-  // Tracking state
   const [tracking, setTracking] = useState(false);
+
+  // State for user's path and stats panel
   const [userPath, setUserPath] = useState<{ latitude: number; longitude: number; timestamp: number }[]>([]);
   const [elapsed, setElapsed] = useState(0); // seconds
   const [distanceCovered, setDistanceCovered] = useState(0); // km
   const [pace, setPace] = useState(0); // min/km
+
+  // Refs for timer and location subscription
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const locationSub = useRef<Location.LocationSubscription | null>(null);
+
+  // UI state for map loading and alerts
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showSavedAlert, setShowSavedAlert] = useState(false);
+  const [showStopAlert, setShowStopAlert] = useState(false);
+  const [showSaveAlert, setShowSaveAlert] = useState(false);
+  
+  // Resets all tracking and UI state to initial values
   const resetRouteState = () => {
   setTracking(false);
   setRouteStarted(false);
@@ -104,6 +119,7 @@ export default function HomeScreen() {
     try {
       // Fetch 3 routes with different seeds
       const promises = [1, 2, 3].map(seed => fetchORSRoute(coords, distance, seed));
+      // A Promise is an object representing the eventual completion or failure of an asynchronous operation.
       const routes = await Promise.all(promises);
       setRoutes(routes);
       setCurrentRouteIndex(0);
@@ -113,14 +129,15 @@ export default function HomeScreen() {
     }
   };
 
-  // Navigation handlers
+  // Handlers for switching between alternative routes
   const handlePrevRoute = () => setCurrentRouteIndex(i => Math.max(i - 1, 0));
   const handleNextRoute = () => setCurrentRouteIndex(i => Math.min(i + 1, routes.length - 1));
 
-  // Panel animation
+  // Animation value for sliding the top panel up/down
   const topPanelTranslate = useRef(new Animated.Value(0)).current; // Y position
 
-  // Start tracking
+  
+  // Starts tracking the user's run
   const startRoute = async () => {
     setTracking(true);
     setUserPath([]);
@@ -128,18 +145,23 @@ export default function HomeScreen() {
     setDistanceCovered(0);
     setPace(0);
 
-    // Start timer
+    // Start timer counting 1 second intervals
     timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-    // Subscribe to location
+    // Request location permission and start watching position
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return;
+    // It calls the callback every time the user moves at least 2 meters (distanceInterval: 2), 
+    // with the highest possible accuracy, and stores the returned subscription in locationSub.current
     locationSub.current = await Location.watchPositionAsync(
       { accuracy: Location.Accuracy.Highest, distanceInterval: 2 },
-      loc => {
-        setUserPath(path => {
+      loc => { //The callback receives the new location (loc).
+        setUserPath(path => { // updates the userPath state, which is an array of all locations visited so far.
           const newPath = [...path, { latitude: loc.coords.latitude, longitude: loc.coords.longitude, timestamp: Date.now() }];
-          // Calculate distance
+          // Calculate distance covered so far
+          // If there are at least two points in the path, it calculates the distance between the last two 
+          // points using the getDistance function (Haversine formula).
+          // setDistanceCovered updates the total distance by adding the new segment.
           if (newPath.length > 1) {
             const prev = newPath[newPath.length - 2];
             const curr = newPath[newPath.length - 1];
@@ -147,55 +169,18 @@ export default function HomeScreen() {
               d + getDistance(prev.latitude, prev.longitude, curr.latitude, curr.longitude)
             );
           }
-          return newPath;
+          return newPath; // The new path array is returned to update the state.
         });
       }
     );
   };
 
-  // show alert to confirm stopping the route
+  // Shows the stop route confirmation alert
   const stopRoute = () => {
-  Alert.alert(
-    'Stop Route',
-    'Are you sure you want to stop the route?',
-    [
-      {
-        text: 'No',
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        onPress: () => {
-          Alert.alert(
-            'Save Route',
-            'Do you want to save this route?',
-            [
-              {
-                text: 'No',
-                style: 'destructive',
-                onPress: () => {
-                  resetRouteState();
-                },
-              },
-              {
-                text: 'Yes',
-                onPress: () => {
-                  setShowSavedAlert(true);
-                  resetRouteState();
-                  setTimeout(() => setShowSavedAlert(false), 2000);
-                },
-              },
-            ],
-            { cancelable: false }
-          );
-        },
-      },
-    ],
-    { cancelable: false }
-  );
-};
+  setShowStopAlert(true);
+  };
 
-  // Update pace
+  // Updates pace whenever elapsed time or distance changes
   useEffect(() => {
     if (distanceCovered > 0) {
       setPace((elapsed / 60) / distanceCovered); // min/km
@@ -234,7 +219,7 @@ export default function HomeScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
       if (locationSub.current) locationSub.current.remove();
     };
-    // eslint-disable-next-line
+     
   }, [isPaused, tracking]);
 
   // Animate panels and start route
@@ -261,7 +246,38 @@ export default function HomeScreen() {
     
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       
-      <View style={styles.container}>{showSavedAlert && (
+      <View style={styles.container}>
+         <CustomAlert
+    visible={showStopAlert}
+    title="Stop Route?"
+    message="Are you sure you want to stop the route?"
+    onCancel={() => setShowStopAlert(false)}
+    onConfirm={() => {
+      setShowStopAlert(false);
+      setShowSaveAlert(true);
+    }}
+    cancelText="No"
+    confirmText="Yes"
+  />
+  <CustomAlert
+    visible={showSaveAlert}
+    title="Save Route?"
+    message="Do you want to save this route?"
+    onCancel={() => {
+      setShowSaveAlert(false);
+      resetRouteState();
+    }}
+    onConfirm={() => {
+      setShowSaveAlert(false);
+      setShowSavedAlert(true);
+      resetRouteState();
+      setTimeout(() => setShowSavedAlert(false), 2000);
+    }}
+    cancelText="No"
+    confirmText="Yes"
+  />
+        {/* Shows saved alert */}
+        {showSavedAlert && (
   <View style={{
     position: 'absolute',
     top: '40%',
@@ -365,7 +381,7 @@ export default function HomeScreen() {
                 style={[styles.customButton, styles.customButtonCancel]}
                 onPress={() => setRoutes([])}
               >
-                <MaterialIcons name="close" size={20} color="#fff" />
+                <MaterialIcons name="delete-forever" size={20} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.customButton}

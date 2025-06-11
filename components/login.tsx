@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../.env/supabase';
 import Logo from './logo';
 import BackgroundCircles from './BackgroundCircles';
+import CustomAlert from './CustomAlert';
 
 export default function LoginScreen({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showLoginError, setShowLoginError] = useState(false);
 
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      Alert.alert('Login failed', error.message);
+      setShowLoginError(true);
+      // Optionally, you can log the error or handle it in a different way
+     
     } else {
-      Alert.alert('Login successful');
+      
       // You can now use supabase.auth.getUser() to get the logged-in user
     }
   };
 
   return (
     <View style={styles.container}>
+      <CustomAlert
+  visible={showLoginError}
+  title="Login error"
+  message="An error occurred while trying to log in."
+  onConfirm={() => setShowLoginError(false)}
+  confirmText="Ok"
+  hideCancel={true}
+/>
       <BackgroundCircles/>
       
       <View style={ styles.logoContainer}>

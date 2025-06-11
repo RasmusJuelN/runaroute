@@ -4,7 +4,7 @@ import { ActivityIndicator, Platform, View } from 'react-native';
 
 import { supabase } from '@/.env/supabase'; // adjust path if needed
 
-import { HapticTab } from '@/components/HapticTab';
+import { HapticTab } from '@/components/ui/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -42,13 +42,13 @@ export default function TabLayout() {
     );
   }
 
-  // if (!session) {
-  //   return showRegister ? (
-  //     <RegisterScreen onSwitchToLogin={() => setShowRegister(false)} />
-  //   ) : (
-  //     <LoginScreen onSwitchToRegister={() => setShowRegister(true)} />
-  //   );
-  // }
+  if (!session) {
+    return showRegister ? (
+      <RegisterScreen onSwitchToLogin={() => setShowRegister(false)} />
+    ) : (
+      <LoginScreen onSwitchToRegister={() => setShowRegister(true)} />
+    );
+  }
 return (
   <View style={{ flex: 1 }}>
 
